@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 //track the name, type, weight, sets, reps, and duration of exercise. If the exercise is a cardio exercise, I should be able to track my distance traveled.
 const workoutSchema = new Schema({
 
-    date: {
+    day: {
         type: Date,
         default: Date.now
     },
