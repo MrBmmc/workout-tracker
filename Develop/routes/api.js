@@ -15,9 +15,24 @@ router.get("/stats", (req,res) => {
     res.sendFile(path.join(__dirname, "../public/stats.html"))
 })
 
+//view workouts
+router.get("/api/workouts/range", (req, res) => {
+    Workout.aggregate([
+      { $addFields : { totalDuration: { $sum : "$exercises.duration" }}
+    }]).sort({ day: -1 }).limit(7)
+    .then(dbWorkout => {
+        res.json(dbWorkout);
+    })
+   
+    .catch(err => {
+      res.status(400).json(err);
+    });
+  });
 //GET workout
-router.get("/", (req, res) => {
-    Workout.find({})
+router.get("/api/workouts", (req, res) => {
+    Workout.aggregate([{
+        $addFields: {totalDuration: {$sum: "$exercises.duration"}}
+    }])
         .then(dbWorkout => {
         res.json(dbWorkout);
     })
@@ -27,31 +42,31 @@ router.get("/", (req, res) => {
 });
 
 // add workout
-router.put("/:id", ({ body }, res) => {
-    Workout.updateOne(body)
-    .then(dbWorkout => {
-        res.json(dbWorkout);
+router.put("/api/workouts/:id", ({ body, params }, res) => {
+    Workout.findByIdAndUpdate(
+        {_id: params.id},
+        {$push:{exercises:body}}
+    )
+        .then(dbWorkout => {
+            res.json(dbWorkout);
     })
     .catch(err => {
         res.status(400).json(err);
+    })
     });
-});
+
 
 
 // create workout
-router.post("/", ({ body }, res) => {
+router.post("/api/workouts/", ({ body }, res) => {
     Workout.create(body)
-    .then(dbWorkout => {
-        res.json(dbWorkout);
+    .then(dbWorkoutData => {
+        res.json(dbWorkoutData);
     })
     .catch(err => {
         res.status(400).json(err);
     });
 });
-
-
-
-
 
 
 
